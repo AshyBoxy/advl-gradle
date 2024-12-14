@@ -1,0 +1,25 @@
+plugins {
+    id "advl"
+}
+
+advl {
+    dependOnMinecraft = true
+    dependOnMinecraftDependencies = true
+//    sourcesJar = project.file(".gradle/advl/client-remapped-sources-test2.jar")
+
+    genSourcePatches {
+        outputDir = project.file("test-patches")
+        patchZip = project.file("patchfile.zip")
+    }
+
+    extractMc {
+        outDir = "mcTest"
+        shouldPatch = true
+        mcJavaWhitelist.add "test"
+        mcAssetsWhitelist.add "assets-test"
+        patchSource = project.file("patchfile.zip")
+//        patchSource = project.file("test-patches")
+    }
+}
+
+sourceSets {}

@@ -1,0 +1,5 @@
+src/
+test-patches*/
+mcRun/
+*.zip
+mcTest/

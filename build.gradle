@@ -1,0 +1,67 @@
+import org.gradle.util.GradleVersion
+
+plugins {
+    id "java-gradle-plugin"
+    id 'maven-publish'
+}
+
+group = "xyz.ashyboxy.advl"
+version = "1.0-SNAPSHOT"
+
+repositories {
+    mavenLocal()
+    maven { url = "https://maven.fabricmc.net/" }
+    maven { url = "https://s01.oss.sonatype.org/content/repositories/snapshots/" }
+    mavenCentral()
+}
+
+dependencies {
+    implementation "com.google.code.gson:gson:2.11.0"
+    implementation "net.fabricmc:tiny-remapper:0.10.4-0.0.3+local"
+    implementation "net.fabricmc:mapping-io:0.6.1"
+    implementation "org.vineflower:vineflower:1.11.0-SNAPSHOT"
+    implementation gradleApi()
+    implementation "io.github.java-diff-utils:java-diff-utils:4.12"
+}
+
+gradlePlugin {
+    plugins {
+        advl {
+            id = "advl"
+            implementationClass = "xyz.ashyboxy.advl.gradle.AdvlGradlePlugin"
+        }
+    }
+}
+
+java {
+	withSourcesJar()
+	sourceCompatibility = JavaVersion.VERSION_21
+	targetCompatibility = JavaVersion.VERSION_21
+}
+
+// thanks loom <3
+configurations.configureEach {
+	if (canBeConsumed)  {
+		attributes {
+			attribute(GradlePluginApiVersion.GRADLE_PLUGIN_API_VERSION_ATTRIBUTE, objects.named(GradlePluginApiVersion, GradleVersion.current().getVersion()))
+		}
+	}
+}
+
+tasks.register("downloadGradleSources") {
+    doLast {
+        // Awful hack to find the gradle api location
+        def gradleApiFile = project.configurations.detachedConfiguration(dependencies.gradleApi()).files.stream()
+                .find {
+                    it.name.startsWith("gradle-api")
+                }
+
+        def gradleApiSources = new File(gradleApiFile.absolutePath.replace(".jar", "-sources.jar"))
+        def url = "https://services.gradle.org/distributions/gradle-${GradleVersion.current().getVersion()}-src.zip"
+
+        gradleApiSources.delete()
+
+        println("Downloading (${url}) to (${gradleApiSources})")
+        gradleApiSources << URI.create(url).toURL().newInputStream()
+    }
+}
