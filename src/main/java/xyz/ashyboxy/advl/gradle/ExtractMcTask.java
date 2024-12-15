@@ -67,7 +67,7 @@ public abstract class ExtractMcTask extends DefaultTask {
 
         File outDir = getProject().file(getOutDir().get());
         Path javaOutDir = outDir.toPath().resolve("java");
-        Path assetsOutDir = outDir.toPath().resolve("assets");
+        Path assetsOutDir = outDir.toPath().resolve("resources");
 
         getLogger().lifecycle("Outputting to {}", outDir.getAbsolutePath());
         getLogger().lifecycle("Source code file whitelist: {}", getMcJavaWhitelist().get());
@@ -120,6 +120,8 @@ public abstract class ExtractMcTask extends DefaultTask {
         getLogger().lifecycle("Finished extracting");
 
         // patch
+        if (!getShouldPatch().getOrElse(true)) return;
+
         Object patchSource = getPatchSource().get();
         Path patchPath;
         if (patchSource instanceof String sPatchSource) {
@@ -186,7 +188,7 @@ public abstract class ExtractMcTask extends DefaultTask {
                 return;
             }
 
-            Files.write(dest, patchedLines, StandardOpenOption.WRITE);
+            Files.write(dest, patchedLines, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
         } else {
             getLogger().warn("Unknown file {}", file);
         }
